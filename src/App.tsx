@@ -12,6 +12,7 @@ import { CardsView } from './components/cards/CardsView';
 
 function DashboardContent() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -72,11 +73,16 @@ function DashboardContent() {
         <div className="bg-blob bg-blob-3 animate-pulse-slow" />
       </div>
 
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
 
       <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10">
         <TransactionAnimationOverlay />
-        <Header />
+        <Header onMenuClick={() => setIsSidebarOpen(true)} />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 scrollbar-hide">
           <div className="max-w-[1600px] mx-auto">
