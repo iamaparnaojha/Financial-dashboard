@@ -5,6 +5,17 @@ export interface Transaction {
   category: string;
   description: string;
   type: 'income' | 'expense';
+  cardId?: string; // Optional card association
+}
+
+export interface Card {
+  id: string;
+  nickname: string;
+  type: 'visa' | 'mastercard' | 'amex' | 'other';
+  last4: string;
+  expiry: string;
+  balance: number;
+  color: string;
 }
 
 export interface FinancialSummary {
@@ -37,6 +48,7 @@ export type UserRole = 'viewer' | 'admin';
 
 export interface AppState {
   transactions: Transaction[];
+  cards: Card[];
   userRole: UserRole;
   darkMode: boolean;
   filters: {

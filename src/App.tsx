@@ -1,57 +1,102 @@
-import React, { useEffect } from 'react';
-import { AppProvider, useApp } from './context/AppContext';
-import { mockTransactions } from './data/mockData';
+import React, { useState } from 'react';
+import { AuthProvider } from './context/AuthContext';
+import { AppProvider } from './context/AppContext';
 import { Header } from './components/layout/Header';
+import Sidebar from './components/layout/Sidebar';
 import { SummaryCards } from './components/dashboard/SummaryCards';
 import { BalanceTrendChart, CategorySpendingChart, MonthlyComparisonChart } from './components/dashboard/Charts';
 import { TransactionList } from './components/transactions/TransactionList';
 import { ObservationCard } from './components/dashboard/ObservationCard';
 import { TransactionAnimationOverlay } from './components/ui/TransactionAnimationOverlay';
+import { CardsView } from './components/cards/CardsView';
 
 function DashboardContent() {
-  const { dispatch } = useApp();
+  const [activeTab, setActiveTab] = useState('overview');
 
-  useEffect(() => {
-    dispatch({ type: 'SET_TRANSACTIONS', payload: mockTransactions });
-  }, [dispatch]);
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'overview':
+        return (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Summary Cards */}
+            <SummaryCards />
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <BalanceTrendChart />
+              <CategorySpendingChart />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <TransactionList />
+              </div>
+              <div className="space-y-6">
+                <MonthlyComparisonChart />
+                <ObservationCard />
+              </div>
+            </div>
+          </div>
+        );
+      case 'transactions':
+        return (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <TransactionList />
+          </div>
+        );
+      case 'cards':
+        return (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <CardsView />
+          </div>
+        );
+      case 'goals':
+      case 'settings':
+        return (
+          <div className="flex flex-col items-center justify-center h-[60vh] glass-card animate-in zoom-in duration-500">
+            <h2 className="text-2xl font-bold mb-2">Coming Soon</h2>
+            <p className="text-gray-500">The {activeTab} feature is currently under development.</p>
+          </div>
+        );
+      default:
+        return <div>Select a tab</div>;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-500 relative">
-      <TransactionAnimationOverlay />
-      <Header />
-      
-      <main className="container mx-auto px-6 py-8">
-        <div className="space-y-8">
-          {/* Summary Cards */}
-          <SummaryCards />
-          
-          {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <BalanceTrendChart />
-            <CategorySpendingChart />
+    <div className="flex h-screen bg-[#F8FAFC] dark:bg-[#030712] transition-colors duration-500 relative overflow-hidden">
+      {/* Decorative Background Blobs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="bg-blob bg-blob-1 animate-pulse-slow" />
+        <div className="bg-blob bg-blob-2 animate-pulse-slow" />
+        <div className="bg-blob bg-blob-3 animate-pulse-slow" />
+      </div>
+
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative z-10">
+        <TransactionAnimationOverlay />
+        <Header />
+
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 scrollbar-hide">
+          <div className="max-w-[1600px] mx-auto">
+            {renderContent()}
           </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <TransactionList />
-            </div>
-            <div className="space-y-6">
-              <MonthlyComparisonChart />
-              <ObservationCard />
-            </div>
-          </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
 
 function App() {
   return (
-    <AppProvider>
-      <DashboardContent />
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <DashboardContent />
+      </AppProvider>
+    </AuthProvider>
   );
 }
 
 export default App;
+

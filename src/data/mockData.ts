@@ -1,4 +1,4 @@
-import { Transaction } from '../types';
+import { Transaction, Card } from '../types';
 
 export const mockTransactions: Transaction[] = [
   // Income transactions
@@ -348,4 +348,34 @@ export const categories = [
   'Transportation',
   'Shopping',
   'Healthcare'
+];
+
+export const mockCards: Card[] = [
+  {
+    id: 'c1',
+    nickname: 'Main Savings',
+    type: 'visa',
+    last4: '4242',
+    expiry: '12/28',
+    balance: 12500.50,
+    color: 'blue'
+  },
+  {
+    id: 'c2',
+    nickname: 'Business Credit',
+    type: 'mastercard',
+    last4: '8812',
+    expiry: '09/27',
+    balance: 4200.75,
+    color: 'purple'
+  },
+  {
+    id: 'c3',
+    nickname: 'Travel Card',
+    type: 'amex',
+    last4: '1004',
+    expiry: '05/29',
+    balance: 1850.20,
+    color: 'emerald'
+  }
 ];

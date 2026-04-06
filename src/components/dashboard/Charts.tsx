@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactECharts from 'echarts-for-react';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as echarts from 'echarts';
 import 'echarts-gl';
 import { Card, CardHeader, CardContent, CardTitle } from '../ui/Card';
@@ -8,6 +9,7 @@ import { formatCurrency, formatDate } from '../../utils/format';
 
 export function BalanceTrendChart() {
   const { balanceTrend, state } = useApp();
+  const isDark = state.darkMode;
 
   const data = balanceTrend.map((point, index) => {
     return [index, 0, point.balance];
@@ -30,16 +32,40 @@ export function BalanceTrendChart() {
     xAxis3D: {
       type: 'category',
       data: dates,
-      name: ''
+      name: '',
+      axisLabel: {
+        textStyle: {
+          color: isDark ? '#fff' : '#333'
+        }
+      },
+      nameTextStyle: {
+        color: isDark ? '#fff' : '#333'
+      }
     },
     yAxis3D: {
       type: 'category',
       data: ['Balance'],
-      name: ''
+      name: '',
+      axisLabel: {
+        textStyle: {
+          color: isDark ? '#fff' : '#333'
+        }
+      },
+      nameTextStyle: {
+        color: isDark ? '#fff' : '#333'
+      }
     },
     zAxis3D: {
       type: 'value',
-      name: 'Amount'
+      name: 'Amount',
+      axisLabel: {
+        textStyle: {
+          color: isDark ? '#fff' : '#333'
+        }
+      },
+      nameTextStyle: {
+        color: isDark ? '#fff' : '#333'
+      }
     },
     grid3D: {
       boxWidth: 200,
@@ -177,16 +203,40 @@ export function MonthlyComparisonChart() {
     xAxis3D: {
         type: 'category',
         data: ['Income', 'Expenses'],
-        name: ''
+        name: '',
+        axisLabel: {
+            textStyle: {
+                color: isDark ? '#fff' : '#333'
+            }
+        },
+        nameTextStyle: {
+            color: isDark ? '#fff' : '#333'
+        }
     },
     yAxis3D: {
         type: 'category',
         data: ['Current Month'],
-        name: ''
+        name: '',
+        axisLabel: {
+            textStyle: {
+                color: isDark ? '#fff' : '#333'
+            }
+        },
+        nameTextStyle: {
+            color: isDark ? '#fff' : '#333'
+        }
     },
     zAxis3D: {
         type: 'value',
-        name: ''
+        name: '',
+        axisLabel: {
+            textStyle: {
+                color: isDark ? '#fff' : '#333'
+            }
+        },
+        nameTextStyle: {
+            color: isDark ? '#fff' : '#333'
+        }
     },
     grid3D: {
         viewControl: {

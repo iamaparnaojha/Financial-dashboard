@@ -1,54 +1,107 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, MeshDistortMaterial, Sphere, Torus, Environment } from '@react-three/drei';
+import { Float, Text3D, Center, Environment, MeshReflectorMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
-function AnimatedShape() {
-  const meshRef = useRef<THREE.Group>(null);
-  const ringRef = useRef<THREE.Mesh>(null);
+function FinancialLogo() {
+  const coinRef = useRef<THREE.Group>(null);
+  
+  // Font URL for 3D Text
+  const fontUrl = "https://raw.githubusercontent.com/mrdoob/three.js/master/examples/fonts/helvetiker_bold.typeface.json";
 
   useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += 0.01;
-      meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.5) * 0.2;
-    }
-    if (ringRef.current) {
-      ringRef.current.rotation.x -= 0.01;
-      ringRef.current.rotation.y -= 0.01;
+    if (coinRef.current) {
+      // Primary rotation
+      coinRef.current.rotation.y += 0.015;
+      // Subtle tilt
+      coinRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.4) * 0.15;
     }
   });
 
   return (
-    <group ref={meshRef}>
-      <Float speed={2} floatIntensity={1.5}>
-        <Sphere args={[1, 64, 64]} scale={0.7}>
-          <MeshDistortMaterial
-            color="#3b82f6" // primary-500
-            emissive="#1e3a8a"
-            distort={0.4}
-            speed={2}
-            roughness={0.1}
-            metalness={0.8}
+    <group ref={coinRef}>
+      <Float speed={2.5} rotationIntensity={0.5} floatIntensity={1}>
+        {/* The Coin Body */}
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[1, 1, 0.2, 32]} />
+          <meshStandardMaterial 
+            color="#FFD700" 
+            metalness={1} 
+            roughness={0.15} 
+            emissive="#B8860B"
+            emissiveIntensity={0.2}
           />
-        </Sphere>
-        <Torus ref={ringRef} args={[1.5, 0.05, 16, 100]} rotation={[Math.PI / 2, 0, 0]}>
-          <meshStandardMaterial color="#60a5fa" emissive="#3b82f6" emissiveIntensity={0.5} metalness={0.9} roughness={0.1} />
-        </Torus>
+        </mesh>
+
+        {/* The Dollar Sign ($) - Front */}
+        <Center position={[0, 0, 0.11]}>
+          <Text3D
+            font={fontUrl}
+            size={0.65}
+            height={0.1}
+            curveSegments={12}
+            bevelEnabled
+            bevelThickness={0.02}
+            bevelSize={0.02}
+            bevelOffset={0}
+            bevelSegments={5}
+          >
+            $
+            <meshStandardMaterial 
+              color="#FFFFFF" 
+              metalness={0.9} 
+              roughness={0.1} 
+              emissive="#FFD700"
+              emissiveIntensity={0.1}
+            />
+          </Text3D>
+        </Center>
+
+        {/* The Dollar Sign ($) - Back */}
+        <Center position={[0, 0, -0.11]} rotation={[0, Math.PI, 0]}>
+          <Text3D
+            font={fontUrl}
+            size={0.65}
+            height={0.1}
+            curveSegments={12}
+            bevelEnabled
+            bevelThickness={0.02}
+            bevelSize={0.02}
+            bevelOffset={0}
+            bevelSegments={5}
+          >
+            $
+            <meshStandardMaterial 
+              color="#FFFFFF" 
+              metalness={0.9} 
+              roughness={0.1} 
+              emissive="#FFD700"
+              emissiveIntensity={0.1}
+            />
+          </Text3D>
+        </Center>
       </Float>
+
+      {/* Lighting for the "Gold" pop */}
+      <ambientLight intensity={0.6} />
+      <spotLight position={[5, 10, 5]} angle={0.15} penumbra={1} intensity={2} color="#FFFFFF" />
+      <pointLight position={[-5, -5, -5]} intensity={1} color="#FFD700" />
+      <pointLight position={[5, 5, 5]} intensity={1.5} color="#FFFFFF" />
+      
+      {/* Environment for reflections */}
       <Environment preset="city" />
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[10, 10, 5]} intensity={1.5} color="#ffffff" />
-      <pointLight position={[-10, -10, -10]} intensity={1} color="#93c5fd" />
     </group>
   );
 }
 
 export function ThreeLogo({ className }: { className?: string }) {
   return (
-    <div className={`w-16 h-16 ${className || ''}`}>
+    <div className={`w-16 h-16 ${className || ''} relative group cursor-pointer`}>
       <Canvas camera={{ position: [0, 0, 4], fov: 45 }}>
-        <AnimatedShape />
+        <FinancialLogo />
       </Canvas>
+      {/* Subtle glow behind the logo */}
+      <div className="absolute inset-0 bg-blue-500/10 dark:bg-blue-400/10 blur-2xl rounded-full -z-10 group-hover:bg-blue-500/20 transition-all" />
     </div>
   );
 }

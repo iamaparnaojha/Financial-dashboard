@@ -5,12 +5,14 @@ import { Card, CardHeader, CardContent, CardTitle } from '../ui/Card';
 import { Modal } from '../ui/Modal';
 import { TransactionForm } from './TransactionForm';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { Transaction } from '../../types';
 import { formatCurrency, formatDate } from '../../utils/format';
 import { cn } from '../../utils/cn';
 
 export function TransactionList() {
-  const { state, dispatch, filteredTransactions } = useApp();
+  const { state, dispatch, filteredTransactions, deleteTransaction } = useApp();
+  const { isAdmin } = useAuth();
   const [searchTerm, setSearchTerm] = useState(state.filters.search);
   const [showFilters, setShowFilters] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
@@ -30,20 +32,24 @@ export function TransactionList() {
     dispatch({ type: 'SET_SORT', payload: { sortBy, sortOrder: newOrder } });
   };
 
-  const handleDeleteTransaction = (id: string) => {
-    if (state.userRole === 'admin') {
-      dispatch({ type: 'DELETE_TRANSACTION', payload: id });
+  const handleDeleteTransaction = async (id: string) => {
+    if (isAdmin) {
+      try {
+        await deleteTransaction(id);
+      } catch (err) {
+        console.error('Failed to delete transaction:', err);
+      }
     }
   };
 
   const handleAddTransaction = () => {
-    if (state.userRole === 'admin') {
+    if (isAdmin) {
       setShowAddModal(true);
     }
   };
 
   const handleEditTransaction = (transaction: Transaction) => {
-    if (state.userRole === 'admin') {
+    if (isAdmin) {
       setEditingTransaction(transaction);
     }
   };
@@ -56,7 +62,7 @@ export function TransactionList() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <CardTitle>Transactions</CardTitle>
-            {state.userRole === 'admin' && (
+            {isAdmin && (
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -209,7 +215,7 @@ export function TransactionList() {
                     )}>
                       {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
                     </span>
-                    {state.userRole === 'admin' && (
+                    {isAdmin && (
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <motion.button
                           whileHover={{ scale: 1.1 }}
@@ -253,7 +259,7 @@ export function TransactionList() {
                   : 'Start by adding your first transaction'
                 }
               </p>
-              {state.userRole === 'admin' && !searchTerm && state.filters.category === 'all' && state.filters.type === 'all' && (
+              {isAdmin && !searchTerm && state.filters.category === 'all' && state.filters.type === 'all' && (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}

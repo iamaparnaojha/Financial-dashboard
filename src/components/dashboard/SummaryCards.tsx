@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Wallet, TrendingUp, TrendingDown, DollarSign, ArrowUp, ArrowDown } from 'lucide-react';
 import { Card, CardContent } from '../ui/Card';
 import { useApp } from '../../context/AppContext';
-import { formatCurrency } from '../../utils/format';
 import { AnimatedCounter } from '../ui/AnimatedCounter';
 
 export function SummaryCards() {
@@ -15,7 +14,7 @@ export function SummaryCards() {
       value: financialSummary.totalBalance,
       icon: Wallet,
       gradient: 'from-blue-500 to-blue-600',
-      bgGradient: 'from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20',
+      bgGradient: 'bg-blue-500/10 border border-blue-500/20',
       trend: financialSummary.totalBalance >= 0 ? 'positive' : 'negative',
       trendValue: Math.abs(financialSummary.totalBalance)
     },
@@ -24,7 +23,7 @@ export function SummaryCards() {
       value: financialSummary.totalIncome,
       icon: TrendingUp,
       gradient: 'from-green-500 to-green-600',
-      bgGradient: 'from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20',
+      bgGradient: 'bg-green-500/10 border border-green-500/20',
       trend: 'positive',
       trendValue: financialSummary.totalIncome
     },
@@ -33,7 +32,7 @@ export function SummaryCards() {
       value: financialSummary.totalExpenses,
       icon: TrendingDown,
       gradient: 'from-red-500 to-red-600',
-      bgGradient: 'from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20',
+      bgGradient: 'bg-red-500/10 border border-red-500/20',
       trend: 'negative',
       trendValue: financialSummary.totalExpenses
     },
@@ -45,8 +44,8 @@ export function SummaryCards() {
         ? 'from-purple-500 to-purple-600' 
         : 'from-orange-500 to-orange-600',
       bgGradient: financialSummary.monthlyIncome >= financialSummary.monthlyExpenses 
-        ? 'from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20' 
-        : 'from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20',
+        ? 'bg-purple-500/10 border border-purple-500/20' 
+        : 'bg-orange-500/10 border border-orange-500/20',
       trend: financialSummary.monthlyIncome >= financialSummary.monthlyExpenses ? 'positive' : 'negative',
       trendValue: Math.abs(financialSummary.monthlyIncome - financialSummary.monthlyExpenses)
     }

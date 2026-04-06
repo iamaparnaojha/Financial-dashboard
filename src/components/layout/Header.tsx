@@ -1,15 +1,16 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Moon, Sun, User, Download, Eye, Edit3 } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Moon, Sun, Download, LogOut, User, Edit3, Eye, UserPlus } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { ThreeLogo } from '../ui/ThreeLogo';
+import { AuthModal } from '../auth/AuthModal';
 
 export function Header() {
   const { state, dispatch } = useApp();
-
-  const handleRoleChange = (role: 'viewer' | 'admin') => {
-    dispatch({ type: 'SET_USER_ROLE', payload: role });
-  };
+  const { user, isAuthenticated, logout } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState<'signin' | 'signup'>('signin');
 
   const handleDarkModeToggle = () => {
     dispatch({ type: 'TOGGLE_DARK_MODE' });
@@ -18,10 +19,8 @@ export function Header() {
   const handleExport = () => {
     const data = {
       transactions: state.transactions,
-      userRole: state.userRole,
       exportDate: new Date().toISOString()
     };
-    
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -33,98 +32,154 @@ export function Header() {
     URL.revokeObjectURL(url);
   };
 
-  return (
-    <motion.header
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 px-6 py-4 sticky top-0 z-50 shadow-sm"
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <ThreeLogo className="w-12 h-12" />
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
-            Finance Dashboard
-          </h1>
-          <motion.div 
-            whileHover={{ scale: 1.05 }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all ${
-              state.userRole === 'admin' 
-                ? 'bg-gradient-to-r from-blue-500 to-blue-600 border-blue-400 shadow-lg' 
-                : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600'
-            }`}
-          >
-            {state.userRole === 'admin' ? (
-              <Edit3 className="w-4 h-4 text-white" />
-            ) : (
-              <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-            )}
-            <span className={`text-sm font-semibold capitalize ${
-              state.userRole === 'admin' 
-                ? 'text-white' 
-                : 'text-gray-700 dark:text-gray-300'
-            }`}>
-              {state.userRole}
-            </span>
-          </motion.div>
-        </div>
+  const openSignIn = () => {
+    setAuthModalTab('signin');
+    setShowAuthModal(true);
+  };
 
-        <div className="flex items-center gap-3">
-          {/* Role Switcher */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600 dark:text-gray-400">Role:</label>
-            <select
-              value={state.userRole}
-              onChange={(e) => handleRoleChange(e.target.value as 'viewer' | 'admin')}
-              className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="viewer">Viewer</option>
-              <option value="admin">Admin</option>
-            </select>
+  const openSignUp = () => {
+    setAuthModalTab('signup');
+    setShowAuthModal(true);
+  };
+
+  return (
+    <>
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white/70 dark:bg-[#1E293B]/40 backdrop-blur-2xl border-b border-white/20 dark:border-white/10 px-4 sm:px-6 py-4 sticky top-0 z-50 shadow-lg"
+      >
+        <div className="flex items-center justify-between gap-4">
+          {/* Left: Logo + title + role badge */}
+          <div className="flex items-center gap-3 min-w-0">
+            <ThreeLogo className="w-10 h-10 flex-shrink-0" />
+            <h1 className="text-xl sm:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 truncate">
+              Finance Dashboard
+            </h1>
+
+            {/* Role badge — only shown when logged in */}
+            <AnimatePresence>
+              {isAuthenticated && user && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold flex-shrink-0 ${
+                    user.role === 'admin'
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-500 border-blue-400/50 text-white shadow-md shadow-blue-500/20'
+                      : 'bg-gradient-to-r from-purple-500 to-violet-500 border-purple-400/50 text-white shadow-md shadow-purple-500/20'
+                  }`}
+                >
+                  {user.role === 'admin' ? <Edit3 className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                  <span className="capitalize">{user.role}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* Export Button */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all shadow-md"
-            title="Export data"
-          >
-            <Download className="w-4 h-4" />
-            <span className="text-sm font-medium">Export</span>
-          </motion.button>
+          {/* Right: actions */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            {/* Export */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleExport}
+              className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all shadow-md text-sm"
+              title="Export data"
+            >
+              <Download className="w-4 h-4" />
+              <span className="hidden md:inline font-medium">Export</span>
+            </motion.button>
 
-          {/* Dark Mode Toggle */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleDarkModeToggle}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all shadow-md ${
-              state.darkMode 
-                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600' 
-                : 'bg-gradient-to-r from-gray-700 to-gray-800 text-white hover:from-gray-800 hover:to-gray-900'
-            }`}
-          >
-            {state.darkMode ? (
-              <Sun className="w-4 h-4" />
-            ) : (
-              <Moon className="w-4 h-4" />
-            )}
-            <span className="text-sm font-medium">
-              {state.darkMode ? 'Light' : 'Dark'}
-            </span>
-          </motion.button>
+            {/* Dark mode toggle */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleDarkModeToggle}
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg transition-all shadow-md text-sm ${
+                state.darkMode
+                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600'
+                  : 'bg-gradient-to-r from-gray-700 to-gray-800 text-white hover:from-gray-800 hover:to-gray-900'
+              }`}
+            >
+              {state.darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              <span className="hidden md:inline font-medium">{state.darkMode ? 'Light' : 'Dark'}</span>
+            </motion.button>
 
-          {/* User Avatar */}
-          <motion.div 
-            whileHover={{ scale: 1.05 }}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg shadow-md"
-          >
-            <User className="w-4 h-4" />
-            <span className="text-sm font-medium">User</span>
-          </motion.div>
+            {/* ── Auth section ── */}
+            <AnimatePresence mode="wait">
+              {isAuthenticated && user ? (
+                /* Logged in: show username + logout */
+                <motion.div
+                  key="user-actions"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="flex items-center gap-2"
+                >
+                  {/* Username chip */}
+                  <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200/60 dark:border-blue-700/50 rounded-xl">
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+                      <User className="w-3.5 h-3.5 text-white" />
+                    </div>
+                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 hidden sm:inline max-w-[100px] truncate">
+                      {user.username}
+                    </span>
+                  </div>
+
+                  {/* Logout button */}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={logout}
+                    title="Sign out"
+                    className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white rounded-lg transition-all shadow-md text-sm"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span className="hidden md:inline font-medium">Logout</span>
+                  </motion.button>
+                </motion.div>
+              ) : (
+                /* Not logged in: Sign In / Create Account button */
+                <motion.div
+                  key="auth-cta"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="flex items-center gap-2"
+                >
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={openSignIn}
+                    className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-blue-400 hover:text-blue-600 dark:hover:border-blue-500 dark:hover:text-blue-400 rounded-lg transition-all text-sm font-medium"
+                  >
+                    <User className="w-4 h-4" />
+                    <span className="hidden sm:inline">Sign In</span>
+                  </motion.button>
+
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={openSignUp}
+                    className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg shadow-md shadow-blue-500/25 transition-all text-sm font-semibold"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    <span className="hidden sm:inline">Create Account</span>
+                  </motion.button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
-      </div>
-    </motion.header>
+      </motion.header>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        defaultTab={authModalTab}
+      />
+    </>
   );
 }
